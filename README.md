@@ -1,6 +1,6 @@
 # blender-texture2vgroup
 
-A Blender addon that creates vertex groups based on greyscale textures.
+A Blender addon that creates vertex groups based on textures.
 
 ## Features
 
