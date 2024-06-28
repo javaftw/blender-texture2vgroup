@@ -7,7 +7,7 @@ A Blender addon that creates vertex groups based on textures.
 - Create multiple vertex groups or a single weight-based group from a greyscale texture
 - Support for existing textures or loading new ones
 - Customizable settings for number of groups, minimum group size, and more
-- Works with Blender 4.1.0 and above
+- Works with Blender 4.1.0 and above (and might work with earlier versions)
 
 ## Installation
 
