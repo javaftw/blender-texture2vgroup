@@ -11,7 +11,7 @@ A Blender addon that creates vertex groups based on textures.
 
 ## Installation
 
-1. Download the `texture2vgroup.py` file
+1. Download the `init.py` file and place it in a folder of your choice. (The default Blender addons folder is recommended.)
 2. Open Blender and go to Edit > Preferences > Add-ons
 3. Click "Install" and select the downloaded file
 4. Enable the addon by checking the box next to "Mesh: Vertex Group by Texture"
