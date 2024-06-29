@@ -6,7 +6,7 @@ from bpy_extras.io_utils import ImportHelper
 bl_info = {
     "name": "Vertex Group from Texture",
     "author": "Hennie Kotze",
-    "version": (1, 8),
+    "version": (1, 9),
     "blender": (4, 1, 0),
     "location": "Properties > Object Data Properties > Vertex Groups",
     "description": "Create vertex groups based on greyscale texture",
@@ -130,8 +130,7 @@ class VGBT_OT_create_groups(bpy.types.Operator, ImportHelper):
             else:
                 unique_colors = analyze_texture(image)
                 quantized_colors = quantize_colors(unique_colors, self.num_clusters)
-                threshold = 1 / (2 * self.num_clusters)  # Automatically calculate threshold
-                success = assign_vertex_groups(context.object, quantized_colors, image, threshold, self.min_group_size, self.base_group_name)
+                success = assign_vertex_groups(context.object, quantized_colors, image, self.min_group_size, self.base_group_name)
                 if success:
                     self.report({'INFO'}, f"Created vertex groups based on texture")
                 else:
@@ -170,7 +169,7 @@ def quantize_colors(colors, num_clusters):
     quantized_colors = (np.digitize(colors, bins) - 1) / (num_clusters - 1)
     return np.unique(quantized_colors)
 
-def assign_vertex_groups(obj, unique_colors, image, threshold, min_group_size, base_group_name):
+def assign_vertex_groups(obj, unique_colors, image, min_group_size, base_group_name):
     mesh = obj.data
     if not mesh.uv_layers.active:
         raise ValueError("No active UV map found. Please ensure the object has an active UV map.")
@@ -197,9 +196,7 @@ def assign_vertex_groups(obj, unique_colors, image, threshold, min_group_size, b
             group_name = f"{base_group_name}.{groups_created+1:02d}"
             group = obj.vertex_groups.get(group_name) or obj.vertex_groups.new(name=group_name)
             for vertex_index in vertex_indices:
-                weight = 1.0 - abs(color - pixel_value)
-                if weight >= threshold:
-                    group.add([vertex_index], weight, 'REPLACE')
+                group.add([vertex_index], 1.0, 'REPLACE')  # Always use weight 1.0
             groups_created += 1
 
     print(f"Created {groups_created} vertex groups")
