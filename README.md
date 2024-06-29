@@ -2,6 +2,10 @@
 
 A Blender addon that creates vertex groups based on textures.
 
+##YouTube
+
+https://youtu.be/aZ7ZEkIvtSc
+
 ## Features
 
 - Create multiple vertex groups or a single weight-based group from a greyscale texture
