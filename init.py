@@ -4,9 +4,9 @@ from bpy.props import StringProperty, IntProperty, FloatProperty, EnumProperty, 
 from bpy_extras.io_utils import ImportHelper
 
 bl_info = {
-    "name": "Vertex Group by Texture",
+    "name": "Vertex Group from Texture",
     "author": "Hennie Kotze",
-    "version": (1, 7),
+    "version": (1, 8),
     "blender": (4, 1, 0),
     "location": "Properties > Object Data Properties > Vertex Groups",
     "description": "Create vertex groups based on greyscale texture",
@@ -51,6 +51,12 @@ class VGBT_OT_create_groups(bpy.types.Operator, ImportHelper):
         default="Texture_Weights"
     )
 
+    normalize_weights: BoolProperty(
+        name="Normalize Weights",
+        description="Normalize weights to full 0-1 range",
+        default=False
+    )
+
     num_clusters: IntProperty(
         name="Number of Groups",
         description="Number of vertex groups to create",
@@ -93,6 +99,7 @@ class VGBT_OT_create_groups(bpy.types.Operator, ImportHelper):
         
         if self.use_weights:
             layout.prop(self, "weight_group_name")
+            layout.prop(self, "normalize_weights")
         else:
             layout.prop(self, "num_clusters")
             layout.prop(self, "min_group_size")
@@ -115,7 +122,7 @@ class VGBT_OT_create_groups(bpy.types.Operator, ImportHelper):
         
         try:
             if self.use_weights:
-                success = assign_weights_from_texture(context.object, image, self.weight_group_name)
+                success = assign_weights_from_texture(context.object, image, self.weight_group_name, self.normalize_weights)
                 if success:
                     self.report({'INFO'}, f"Created vertex group '{self.weight_group_name}' with weights from texture")
                 else:
@@ -198,7 +205,7 @@ def assign_vertex_groups(obj, unique_colors, image, threshold, min_group_size, b
     print(f"Created {groups_created} vertex groups")
     return True
 
-def assign_weights_from_texture(obj, image, group_name):
+def assign_weights_from_texture(obj, image, group_name, normalize):
     mesh = obj.data
     if not mesh.uv_layers.active:
         raise ValueError("No active UV map found. Please ensure the object has an active UV map.")
@@ -209,14 +216,26 @@ def assign_weights_from_texture(obj, image, group_name):
 
     group = obj.vertex_groups.get(group_name) or obj.vertex_groups.new(name=group_name)
 
+    weights = []
     for poly in mesh.polygons:
         for loop_idx in poly.loop_indices:
             vertex_index = mesh.loops[loop_idx].vertex_index
             uv = uv_layer[loop_idx].uv
             x, y = int(uv.x * (width - 1)), int(uv.y * (height - 1))
             pixel_value = np.mean(pixels[y, x]) if image.channels > 1 else pixels[y, x, 0]
-            weight = pixel_value
-            group.add([vertex_index], weight, 'REPLACE')
+            weights.append((vertex_index, pixel_value))
+
+    if normalize:
+        min_weight = min(w for _, w in weights)
+        max_weight = max(w for _, w in weights)
+        weight_range = max_weight - min_weight
+        if weight_range > 0:
+            weights = [(idx, (w - min_weight) / weight_range) for idx, w in weights]
+        else:
+            weights = [(idx, 1.0) for idx, w in weights]
+
+    for vertex_index, weight in weights:
+        group.add([vertex_index], weight, 'REPLACE')
 
     print(f"Created vertex group '{group_name}' with weights from texture")
     return True
