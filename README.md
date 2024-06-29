@@ -2,7 +2,7 @@
 
 A Blender addon that creates vertex groups based on textures.
 
-##YouTube
+## YouTube
 
 https://youtu.be/aZ7ZEkIvtSc
 
