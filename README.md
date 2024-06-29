@@ -24,6 +24,7 @@ A Blender addon that creates vertex groups based on textures.
 4. Choose your settings:
    - Texture Source: Use an existing texture or load a new one
    - Use as Weights: Create a single weight-based group or multiple groups
+   - Normalize Weights: Set the weights range to between 0.0 and 1.0
    - Number of Groups: How many vertex groups to create (if not using weights)
    - Minimum Group Size: Smallest number of vertices to form a group
    - Base Group Name: Prefix for your vertex group names
